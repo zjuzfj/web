@@ -1,120 +1,772 @@
 <!DOCTYPE html>
-<html lang="ch-zn">
-
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-
-    <title>Number guessing game</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字版抽卡模拟器</title>
     <style>
-        html {
-            font-family: sans-serif;
+        :root {
+            --primary-color: #6a5acd;
+            --secondary-color: #483d8b;
+            --accent-color: #9370db;
+            --light-color: #f5f5f5;
+            --dark-color: #333;
+            --rarity-ssr: #ffd700;
+            --rarity-sr: #c0c0c0;
+            --rarity-r: #cd853f;
+            --rating-1: #ffd700;
+            --rating-2: #daa520;
+            --rating-3: #f0e68c;
+            --rating-4: #98fb98;
+            --rating-5: #add8e6;
+            --rating-6: #dda0dd;
+            --rating-7: #ffc0cb;
         }
 
         body {
-            width: 50%;
+            font-family: 'Arial', sans-serif;
             max-width: 800px;
-            min-width: 480px;
             margin: 0 auto;
+            padding: 20px;
+            background-color: var(--light-color);
+            color: var(--dark-color);
         }
 
-        .form input[type="number"] {
-            width: 200px;
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
-        .lastResult {
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
             color: white;
-            padding: 3px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
         }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .result {
+            margin-top: 20px;
+            min-height: 200px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: var(--light-color);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .item {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .item:hover {
+            transform: translateY(-2px);
+        }
+
+        .SSR {
+            background: linear-gradient(135deg, var(--rarity-ssr) 0%, #ffb75e 100%);
+            color: #8B0000;
+            border: 2px solid #FF4500;
+        }
+
+        .SR {
+            background: linear-gradient(135deg, var(--rarity-sr) 0%, #ffffff 100%);
+            color: #4B0082;
+            border: 2px solid #9370DB;
+        }
+
+        .R {
+            background: linear-gradient(135deg, var(--rarity-r) 0%, #f5deb3 100%);
+            color: #000080;
+            border: 2px solid #D2B48C;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: var(--light-color);
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .history {
+            margin-top: 20px;
+        }
+
+        .history h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .history-list {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: var(--light-color);
+        }
+
+        /* 欧非评级样式 */
+        .rating-info {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            background-color: var(--light-color);
+            border: 1px solid #ddd;
+        }
+
+        .rating-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* 概率设置样式 */
+        .rarity-settings {
+            margin-top: 20px;
+            background-color: var(--light-color);
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .rarity-settings h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .rarity-selector {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rarity-input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .rarity-label {
+            font-weight: bold;
+        }
+
+        .rarity-input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        /* 图鉴样式 */
+        .pokedex {
+            margin-top: 20px;
+        }
+
+        .pokedex-tabs {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .pokedex-tab {
+            padding: 10px 15px;
+            background-color: var(--light-color);
+            cursor: pointer;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+            border: 1px solid #ddd;
+            transition: background-color 0.3s ease;
+        }
+
+        .pokedex-tab:hover {
+            background-color: #e0e0e0;
+        }
+
+        .pokedex-tab.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .pokedex-content {
+            border: 1px solid #ddd;
+            border-radius: 0 5px 5px 5px;
+            padding: 15px;
+            background-color: var(--light-color);
+            min-height: 150px;
+        }
+
+        .pokedex-item {
+            display: inline-block;
+            padding: 8px;
+            margin: 5px;
+            border-radius: 4px;
+            min-width: 120px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .pokedex-item.found {
+            opacity: 1;
+        }
+
+        .pokedex-item.not-found {
+            opacity: 0.3;
+            text-decoration: line-through;
+        }
+
+        .pokedex-stats {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* 新增的统计区域样式 */
+        .advanced-stats {
+            margin-top: 20px;
+            background-color: var(--light-color);
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .advanced-stats h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .streak-info, .rate-info {
+            margin-bottom: 10px;
+        }
+
+        /* 评级颜色 */
+        .rating-1 { background-color: var(--rating-1); border-color: #ff8c00; }
+        .rating-2 { background-color: var(--rating-2); border-color: #b8860b; }
+        .rating-3 { background-color: var(--rating-3); border-color: #bdb76b; }
+        .rating-4 { background-color: #e6e6fa; border-color: #9370db; } /* 薛定谔的欧洲人：浅紫色 */
+        .rating-5 { background-color: #ffb6c1; border-color: #dc143c; } /* 面目全非：浅粉色 */
+        .rating-6 { background-color: #f5deb3; border-color: #cd853f; } /* 绝世非酋：浅棕色 */
+        .rating-7 { background-color: #d3d3d3; border-color: #a9a9a9; } /* 万劫不复大非酋：浅灰色 */
     </style>
 </head>
-
 <body>
-    <h1>Number guessing game</h1>
+    <div class="container">
+        <h1>文字版抽卡模拟器</h1>
+        
+        <!-- 欧非评级模块 -->
+        <div class="rating-info" id="rating-info">
+            <div class="rating-title" id="rating-title">--</div>
+        </div>
 
-    <p>We have selected a random number between 1 and 30.</p>
+        <!-- 概率设置模块 -->
+        <div class="rarity-settings">
+            <h3>抽卡概率设置</h3>
+            <div class="rarity-selector">
+                <div class="rarity-input-group">
+                    <span class="rarity-label">SSR概率(%)：</span>
+                    <input type="number" id="ssr-rate" class="rarity-input" value="2" min="0" max="100">
+                </div>
+                <div class="rarity-input-group">
+                    <span class="rarity-label">SR概率(%)：</span>
+                    <input type="number" id="sr-rate" class="rarity-input" value="8" min="0" max="100">
+                </div>
+                <div class="rarity-input-group">
+                    <span class="rarity-label">R概率(%)：</span>
+                    <input type="number" id="r-rate" class="rarity-input" value="90" min="0" max="100">
+                </div>
+            </div>
+        </div>
 
-    <div class="form">
-        <label for="guessField">Enter a guess: </label>
-        <input type="number" min="1" max="30" required id="guessField" class="guessField">
-        <input type="submit" value="Submit guess" class="guessSubmit">
-    </div>
+        <div class="controls">
+            <button id="single-draw">单抽</button>
+            <button id="multi-draw">十连抽</button>
+            <button id="reset-all">重置</button>
+            <button id="show-pokedex">图鉴</button>
+        </div>
 
-    <div class="resultParas">
-        <p class="guesses"></p>
-        <p class="lastResult"></p>
-        <p class="times"></p>
+        <div class="result" id="result-area">
+            <p>欢迎使用抽卡模拟器！点击上方按钮开始抽卡。</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="SSR" style="padding: 5px; margin-bottom: 5px;">SSR</div>
+                <span id="ssr-count">0</span>
+            </div>
+            <div class="stat-item">
+                <div class="SR" style="padding: 5px; margin-bottom: 5px;">SR</div>
+                <span id="sr-count">0</span>
+            </div>
+            <div class="stat-item">
+                <div class="R" style="padding: 5px; margin-bottom: 5px;">R</div>
+                <span id="r-count">0</span>
+            </div>
+            <div class="stat-item">
+                <div style="padding: 5px; margin-bottom: 5px; background-color: #e0e0e0;">总抽数</div>
+                <span id="total-count">0</span>
+            </div>
+        </div>
+
+        <div class="history">
+            <h3>抽卡历史</h3>
+            <div class="history-list" id="history-area"></div>
+        </div>
+
+        <!-- 图鉴 -->
+        <div class="pokedex" id="pokedex">
+            <div class="pokedex-tabs">
+                <div class="pokedex-tab active" data-rarity="SSR">SSR</div>
+                <div class="pokedex-tab" data-rarity="SR">SR</div>
+                <div class="pokedex-tab" data-rarity="R">R</div>
+                <div class="pokedex-tab" data-rarity="all">全部</div>
+            </div>
+            <div class="pokedex-content" id="pokedex-content"></div>
+            <div class="pokedex-stats" id="pokedex-stats"></div>
+        </div>
+
+        <!-- 新增的统计区域 -->
+        <div class="advanced-stats" id="advanced-stats">
+            <h3>抽卡统计</h3>
+            <div class="streak-info">
+                <p>当前未出SSR抽数：<span id="current-streak">0</span></p>
+                <p>最长未出SSR抽数：<span id="max-streak">0</span></p>
+            </div>
+            <div class="rate-info">
+                <p>SSR平均出货频率：<span id="ssr-rate-display">--</span> 抽/次</p>
+                <p>SR平均出货频率：<span id="sr-rate-display">--</span> 抽/次</p>
+                <p>R平均出货频率：<span id="r-rate-display">--</span> 抽/次</p>
+            </div>
+        </div>
     </div>
 
     <script>
+        // 预设的物品池
+        const itemPool = {
+            SSR: [
+                "神剑·破晓之光", "圣衣·神圣庇护", "龙玉·觉醒之力", "神弓·星辰之怒",
+                "魔导书·创世之章", "法杖·生命之源", "魔剑·暗影收割者", "铠甲·永恒壁垒"
+            ],
+            SR: [
+                "银剑·月光", "精钢甲·守护", "宝石·魔力增幅", "神射手之弓",
+                "魔法卷轴·烈焰风暴", "治愈之杖", "刺客匕首·影袭", "战士头盔·无畏",
+                "圣骑士盾牌", "法师长袍"
+            ],
+            R: [
+                "铁剑·基础", "皮甲·防御", "石头·力量", "长弓·精准",
+                "火球术·初级", "治疗药水·小", "飞刀·投掷", "盾牌·抵挡",
+                "猎人披风", "盗贼手套", "战士护腕", "法师腰带"
+            ]
+        };
 
-        let randomNumber = Math.floor(Math.random() * 30) + 1;
+        // 统计数据
+        let stats = {
+            SSR: 0,
+            SR: 0,
+            R: 0,
+            total: 0
+        };
 
-        const guesses = document.querySelector(".guesses");
-        const lastResult = document.querySelector(".lastResult");
-        const times = document.querySelector(".times");
+        // 历史记录
+        let drawHistory = [];
 
-        const guessSubmit = document.querySelector(".guessSubmit");
-        const guessField = document.querySelector(".guessField");
+        // 图鉴数据
+        let pokedex = {
+            SSR: {},
+            SR: {},
+            R: {}
+        };
 
-        let guessCount = 1;
-        let resetButton;
+        // 新增的统计数据
+        let streakStats = {
+            currentStreak: 0, // 当前未出SSR的连续抽数
+            maxStreak: 0,     // 最长未出SSR的连续抽数
+            ssrDraws: []      // 记录每次获得SSR的抽数位置
+        };
 
+        // 欧非评级配置（基于SSR获得率）
+        const ratings = [
+            { title: "宇宙至尊级欧皇", min: 5, max: 100, className: "rating-1" },
+            { title: "尊贵欧洲人", min: 3, max: 5, className: "rating-2" },
+            { title: "初出茅庐的欧皇", min: 2.5, max: 3, className: "rating-3" },
+            { title: "薛定谔的欧洲人", min: 1.5, max: 2.5, className: "rating-4" },
+            { title: "面目全非", min: 1, max: 1.5, className: "rating-5" },
+            { title: "绝世非酋", min: 0.5, max: 1, className: "rating-6" },
+            { title: "万劫不复大非酋", min: 0, max: 0.5, className: "rating-7" }
+        ];
 
-        function checkGuess() {
-            const userGuess = Number(guessField.value);
-            if (guessCount === 1) {
-                guesses.textContent = "Previous guesses: ";
+        // 初始化图鉴数据
+        function initPokedex() {
+            for (const rarity in itemPool) {
+                itemPool[rarity].forEach(item => {
+                    pokedex[rarity][item] = 0;
+                });
             }
-            guesses.textContent += `${userGuess} `;
+        }
+        initPokedex();
 
-            if (userGuess === randomNumber) {
-                lastResult.textContent = "Congratulations! You got it right!";
-                lastResult.style.backgroundColor = "green";
-                setGameOver();
+        // DOM 元素
+        const resultArea = document.getElementById('result-area');
+        const ssrCount = document.getElementById('ssr-count');
+        const srCount = document.getElementById('sr-count');
+        const rCount = document.getElementById('r-count');
+        const totalCount = document.getElementById('total-count');
+        const historyArea = document.getElementById('history-area');
+        const singleDrawBtn = document.getElementById('single-draw');
+        const multiDrawBtn = document.getElementById('multi-draw');
+        const resetBtn = document.getElementById('reset-all');
+        const showPokedexBtn = document.getElementById('show-pokedex');
+        const ssrRateInput = document.getElementById('ssr-rate');
+        const srRateInput = document.getElementById('sr-rate');
+        const rRateInput = document.getElementById('r-rate');
+        const pokedexElement = document.getElementById('pokedex');
+        const pokedexContent = document.getElementById('pokedex-content');
+        const pokedexStats = document.getElementById('pokedex-stats');
+        const pokedexTabs = document.querySelectorAll('.pokedex-tab');
+        const advancedStats = document.getElementById('advanced-stats');
+        const currentStreakDisplay = document.getElementById('current-streak');
+        const maxStreakDisplay = document.getElementById('max-streak');
+        const ssrRateDisplay = document.getElementById('ssr-rate-display');
+        const srRateDisplay = document.getElementById('sr-rate-display');
+        const rRateDisplay = document.getElementById('r-rate-display');
+        const ratingInfo = document.getElementById('rating-info');
+        const ratingTitle = document.getElementById('rating-title');
+
+        // 初始状态下隐藏图鉴
+        pokedexElement.style.display = 'none';
+
+        // 更新统计信息
+        function updateStats() {
+            ssrCount.textContent = stats.SSR;
+            srCount.textContent = stats.SR;
+            rCount.textContent = stats.R;
+            totalCount.textContent = stats.total;
+            
+            // 更新高级统计信息
+            currentStreakDisplay.textContent = streakStats.currentStreak;
+            maxStreakDisplay.textContent = streakStats.maxStreak;
+            
+            // 计算平均出货频率
+            if (stats.SSR > 0) {
+                ssrRateDisplay.textContent = (stats.total / stats.SSR).toFixed(1);
             } else {
-                lastResult.textContent = "Wrong!";
-                lastResult.style.backgroundColor = "red";
-
+                ssrRateDisplay.textContent = '--';
             }
-            times.textContent = `times = ${guessCount}`;
-            guessCount++;
-            guessField.value = "";
-            guessField.focus();
-        }
-        guessSubmit.addEventListener("click", checkGuess);
-        function setGameOver() {
-            guessField.disabled = true;
-            guessSubmit.disabled = true;
-            resetButton = document.createElement("button");
-            resetButton.textContent = "Start new game";
-            document.body.append(resetButton);
-            resetButton.addEventListener("click", resetGame);
+            
+            if (stats.SR > 0) {
+                srRateDisplay.textContent = (stats.total / stats.SR).toFixed(1);
+            } else {
+                srRateDisplay.textContent = '--';
+            }
+            
+            if (stats.R > 0) {
+                rRateDisplay.textContent = (stats.total / stats.R).toFixed(1);
+            } else {
+                rRateDisplay.textContent = '--';
+            }
+            
+            // 更新欧非评级
+            updateRating();
         }
 
-        function resetGame() {
-            guessCount = 1;
+        // 更新欧非评级
+        function updateRating() {
+            if (stats.total === 0) {
+                // 没有抽卡数据
+                ratingInfo.className = "rating-info";
+                ratingTitle.textContent = "--";
+                return;
+            }
+            
+            // 计算SSR获得率 (百分比)
+            const ssrRate = (stats.SSR / stats.total) * 100;
+            
+            // 确定评级
+            const rating = ratings.find(r => ssrRate >= r.min && ssrRate < r.max);
+            if (rating) {
+                ratingTitle.textContent = rating.title;
+                // 移除所有评级类
+                ratings.forEach(r => ratingInfo.classList.remove(r.className));
+                // 添加当前评级类
+                ratingInfo.classList.add(rating.className);
+                ratingInfo.classList.add('rating-info');
+            } else {
+                ratingTitle.textContent = "未知";
+                ratingInfo.className = "rating-info";
+            }
+        }
 
-            const resetParas = document.querySelectorAll(".resultParas p");
-            for (const resetPara of resetParas) {
-                resetPara.textContent = "";
+        // 更新历史记录
+        function updateHistory() {
+            historyArea.innerHTML = '';
+            drawHistory.forEach(record => {
+                const div = document.createElement('div');
+                div.className = `item ${record.rarity}`;
+                div.textContent = `${record.item} (${record.rarity})`;
+                historyArea.appendChild(div);
+            });
+        }
+
+        // 获取随机数 [min, max)
+        function getRandom(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        // 随机抽取一个物品
+        function drawItem() {
+            const ssrRate = parseFloat(ssrRateInput.value) || 0;
+            const srRate = parseFloat(srRateInput.value) || 0;
+            const rRate = parseFloat(rRateInput.value) || 0;
+
+            // 确保概率总和不超过100%
+            const totalRate = ssrRate + srRate + rRate;
+            if (totalRate > 100) {
+                alert('概率总和超过100%，请调整！');
+                return null;
             }
 
-            resetButton.parentNode.removeChild(resetButton);
+            const random = getRandom(0, 100);
+            let rarity;
 
-            guessField.disabled = false;
-            guessSubmit.disabled = false;
-            guessField.value = "";
-            guessField.focus();
+            if (random < ssrRate) {
+                rarity = 'SSR';
+            } else if (random < ssrRate + srRate) {
+                rarity = 'SR';
+            } else {
+                rarity = 'R';
+            }
 
-            lastResult.style.backgroundColor = "white";
+            const items = itemPool[rarity];
+            const itemIndex = Math.floor(Math.random() * items.length);
+            const item = items[itemIndex];
 
-            randomNumber = Math.floor(Math.random() * 100) + 1;
+            // 更新统计
+            stats[rarity]++;
+            stats.total++;
+            updateStats();
+
+            // 添加到历史
+            drawHistory.push({ item, rarity });
+            if (drawHistory.length > 50) {
+                drawHistory.shift();
+            }
+            updateHistory();
+
+            // 更新图鉴
+            if (pokedex[rarity][item] !== undefined) {
+                pokedex[rarity][item]++;
+            }
+
+            // 更新连续未出SSR统计
+            streakStats.currentStreak++;
+            if (rarity === 'SSR') {
+                streakStats.ssrDraws.push(stats.total);
+                if (streakStats.currentStreak > streakStats.maxStreak) {
+                    streakStats.maxStreak = streakStats.currentStreak;
+                }
+                streakStats.currentStreak = 0;
+            }
+            
+            updateStats(); // 再次更新以反映最新的抽卡统计
+
+            return { item, rarity };
         }
 
+        // 单抽
+        function singleDraw() {
+            clearResults();
+            const result = drawItem();
+            if (result) {
+                displayResult(result);
+            }
+        }
 
+        // 十连抽
+        function multiDraw() {
+            clearResults();
+            const results = [];
+            for (let i = 0; i < 10; i++) {
+                const result = drawItem();
+                if (result) {
+                    results.push(result);
+                }
+            }
+            displayResults(results);
+        }
 
+        // 显示单个结果
+        function displayResult(result) {
+            const div = document.createElement('div');
+            div.className = `item ${result.rarity}`;
+            div.textContent = `${result.item} (${result.rarity})`;
+            resultArea.appendChild(div);
+        }
+
+        // 显示多个结果
+        function displayResults(results) {
+            results.forEach(result => {
+                displayResult(result);
+            });
+        }
+
+        // 清空结果区域
+        function clearResults() {
+            resultArea.innerHTML = '';
+        }
+
+        // 重置所有数据
+        function resetAll() {
+            stats = {
+                SSR: 0,
+                SR: 0,
+                R: 0,
+                total: 0
+            };
+            drawHistory = [];
+            initPokedex();
+            // 重置高级统计
+            streakStats = {
+                currentStreak: 0,
+                maxStreak: 0,
+                ssrDraws: []
+            };
+            clearResults();
+            updateStats();
+            updateHistory();
+            updatePokedex('SSR');
+            resultArea.innerHTML = '<p>抽卡数据已重置！点击上方按钮开始抽卡。</p>';
+        }
+
+        // 显示/隐藏图鉴
+        function togglePokedex() {
+            if (pokedexElement.style.display === 'none') {
+                pokedexElement.style.display = 'block';
+                updatePokedex('SSR'); // 默认显示SSR图鉴
+                showPokedexBtn.textContent = '隐藏图鉴';
+            } else {
+                pokedexElement.style.display = 'none';
+                showPokedexBtn.textContent = '图鉴';
+            }
+        }
+
+        // 更新图鉴显示
+        function updatePokedex(rarity) {
+            pokedexContent.innerHTML = '';
+            
+            let itemsToDisplay = [];
+            if (rarity === 'all') {
+                ['SSR', 'SR', 'R'].forEach(r => {
+                    itemsToDisplay = itemsToDisplay.concat(
+                        Object.keys(pokedex[r]).map(item => ({item, rarity: r}))
+                    );
+                });
+            } else {
+                itemsToDisplay = Object.keys(pokedex[rarity]).map(item => ({item, rarity}));
+            }
+
+            itemsToDisplay.forEach(itemData => {
+                const item = itemData.item;
+                const rarity = itemData.rarity;
+                const count = pokedex[rarity][item];
+                
+                const div = document.createElement('div');
+                div.className = `pokedex-item ${count > 0 ? 'found' : 'not-found'} ${rarity}`;
+                div.textContent = count > 0 ? `${item} x${count}` : item;
+                pokedexContent.appendChild(div);
+            });
+
+            // 更新图鉴统计
+            let totalItems = 0;
+            let foundItems = 0;
+            
+            if (rarity === 'all') {
+                ['SSR', 'SR', 'R'].forEach(r => {
+                    const items = Object.values(pokedex[r]);
+                    totalItems += items.length;
+                    foundItems += items.filter(count => count > 0).length;
+                });
+            } else {
+                const items = Object.values(pokedex[rarity]);
+                totalItems = items.length;
+                foundItems = items.filter(count => count > 0).length;
+            }
+            
+            pokedexStats.textContent = `已收集: ${foundItems}/${totalItems} (${Math.round((foundItems/totalItems)*100)}%)`;
+        }
+
+        // 事件监听
+        singleDrawBtn.addEventListener('click', singleDraw);
+        multiDrawBtn.addEventListener('click', multiDraw);
+        resetBtn.addEventListener('click', resetAll);
+        showPokedexBtn.addEventListener('click', togglePokedex);
+
+        // 图鉴标签切换
+        pokedexTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有活动标签样式
+                pokedexTabs.forEach(t => t.classList.remove('active'));
+                // 添加当前标签活动样式
+                tab.classList.add('active');
+                // 更新图鉴内容
+                updatePokedex(tab.dataset.rarity);
+            });
+        });
+
+        // 概率输入验证
+        function validateRates() {
+            const ssrRate = parseFloat(ssrRateInput.value) || 0;
+            const srRate = parseFloat(srRateInput.value) || 0;
+            const rRate = parseFloat(rRateInput.value) || 0;
+            
+            ssrRateInput.value = Math.max(0, Math.min(100, ssrRate));
+            srRateInput.value = Math.max(0, Math.min(100, srRate));
+            rRateInput.value = Math.max(0, Math.min(100, rRate));
+        }
+
+        ssrRateInput.addEventListener('change', validateRates);
+        srRateInput.addEventListener('change', validateRates);
+        rRateInput.addEventListener('change', validateRates);
     </script>
 </body>
-
 </html>
+    
